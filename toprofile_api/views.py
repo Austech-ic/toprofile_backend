@@ -6,67 +6,24 @@ from utils.responses import SuccessResponse,FailureResponse
 from .serializers import (
     AboutUseSerializer,
     OurServiceSerializer,
-    ReUsableSerializer,
-    HomePageSerializer,
+   FeatureSectionSerializer,
     OurTeamSerializer,
     PropertyInputSerializer,
     PropertyOutputSerializer,
     BlogSerializer,
-    ListingCategorySerializer,
+    HeroSectionSerializer,
     TestimonySerializer,
     FillFormserializer,
-    AgentSerializer
+    AgentSerializer,
+    ReUsableSerializer,
+    AgentMemberSerializer,
+    AgentReadSerializer
 )
 from rest_framework.parsers import JSONParser,MultiPartParser,FormParser
 from drf_yasg.openapi import IN_QUERY, Parameter
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-
-class ListingCategoryApiView(APIView):
-    @swagger_auto_schema(
-        request_body=ListingCategorySerializer
-    )
-    def post(self,request):
-        try:
-            serializer=ListingCategorySerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return SuccessResponse(serializer.data,status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
-    def get(self,request):
-        try:
-            queryset=ListingCategory.objects.all()
-            data=ListingCategorySerializer(queryset,many=True).data
-            return SuccessResponse(data,status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-        
-class SingleCategoryApiView(APIView):
-        
-    @swagger_auto_schema(
-            request_body=ListingCategorySerializer
-    )
-    def put(self,request,pk):
-        try:
-            instance=ListingCategory.objects.get(pk=pk)
-            serializer=ListingCategorySerializer(instance=instance,data=request.data)
-            serializer.is_valid(raise_exception=True)
-            data=serializer.save()
-            return SuccessResponse(ListingCategorySerializer(data).data,status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-        
-
-    def delete(self,request,pk):
-        try:
-            instance=ListingCategory.objects.get(pk=pk)
-            instance.delete()
-            return SuccessResponse("category deleted",status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-
 class BlogApiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
    
@@ -135,7 +92,6 @@ class PropertyApiView(APIView):
    
     @swagger_auto_schema(
             manual_parameters=[
-                Parameter("category",IN_QUERY,type="int",required=False)   ,
                 Parameter("page", IN_QUERY, type="int", required=False),
                 Parameter("limit", IN_QUERY, type="int", required=False),
                 Parameter("minprice",IN_QUERY,type="int",required=False),
@@ -145,17 +101,15 @@ class PropertyApiView(APIView):
     def get(self,request):
         try:
             page = int(request.GET.get("page", 0))
-            limit = int(request.GET.get("limit", 10))
-            category=request.GET.get("category",None)
+            limit = int(request.GET.get("limit", 20))
             minprice=int(request.GET.get("minprice",0))
             maxprice=int(request.GET.get("maxprice",0))
-            queryset=PropertyListing.objects.select_related("category").order_by("-created_at").all()
-            if category:
-                queryset=queryset.filter(category__pk=category)
+            queryset=PropertyListing.objects.order_by("-created_at").all()
             if minprice!=0:
-                queryset=queryset.filter(price__gte=minprice)
+                queryset=queryset.filter(amount__gte=minprice)
+
             if maxprice !=0:
-                queryset=queryset.filter(price__lte=maxprice)
+                queryset=queryset.filter(amount__lte=maxprice)
 
             paginator = queryset[(page * limit) : (page * limit) + limit]
             return SuccessResponse(PropertyOutputSerializer(paginator,many=True).data,status=status.HTTP_200_OK)
@@ -258,7 +212,6 @@ class SingleAboutAPiView(APIView):
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
-
     def delete(self,request,pk):
         try:
             instance=AboutUs.objects.get(pk=pk)
@@ -282,7 +235,7 @@ class OurServicesApiView(APIView):
 
     def get(self,request):
         try:
-            queryset=OurServices.objects.all()
+            queryset=OurServices.objects.first()
             return SuccessResponse(OurServiceSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
@@ -310,51 +263,6 @@ class SingleOurServicesAPiView(APIView):
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
-class StatmentApiView(APIView):
-
-    @swagger_auto_schema(
-            request_body=ReUsableSerializer
-    )
-    def post(self,request):
-        try:
-            serializer=ReUsableSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            Statement.objects.create(**serializer.validated_data)
-            return SuccessResponse("saved",status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-
-    def get(self,request):
-        try:
-            queryset=Statement.objects.all()
-            return SuccessResponse(ReUsableSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-
-class SingleStatementAPiView(APIView):
-
-    @swagger_auto_schema(
-            request_body=ReUsableSerializer
-    )
-    def put(self,request,pk):
-        try:
-            serializer=ReUsableSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            Statement.objects.filter(pk=pk)\
-                .update(**serializer.validated_data)
-            return SuccessResponse("updated successful",status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-        
-
-    def delete(self,request,pk):
-        try:
-            instance=Statement.objects.get(pk=pk)
-            instance.delete()
-            return SuccessResponse("statement deleted",status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-
 class TermsOfServiceApiView(APIView):
 
     @swagger_auto_schema(
@@ -443,55 +351,9 @@ class SinglePrivacyAPiView(APIView):
         try:
             instance=PrivatePolicy.objects.get(pk=pk)
             instance.delete()
-            return SuccessResponse("Term of services deleted",status=status.HTTP_200_OK)
+            return SuccessResponse("Privacy deleted",status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-
-class HomePageApiView(APIView):
-
-    @swagger_auto_schema(
-            request_body=HomePageSerializer
-    )
-    def post(self,request):
-        try:
-            serializer=HomePageSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return SuccessResponse(serializer.data,status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-
-    def get(self,request):
-        try:
-            queryset=HomePage.objects.first()
-            return SuccessResponse(HomePageSerializer(queryset).data,status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-
-class SingleHomePageAPiView(APIView):
-    
-    @swagger_auto_schema(
-            request_body=HomePageSerializer
-    )
-    def put(self,request,pk):
-        try:
-            instance=HomePage.objects.get(pk=pk)
-            serializer=HomePageSerializer(instance=instance,data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return SuccessResponse("updated successfully",status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-        
-
-    def delete(self,request,pk):
-        try:
-            instance=HomePage.objects.get(pk=pk)
-            instance.delete()
-            return SuccessResponse("Term of services deleted",status=status.HTTP_200_OK)
-        except Exception as e:
-            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-
 
 class OurTeamApiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
@@ -539,7 +401,6 @@ class SingleOurTeamAPiView(APIView):
             return SuccessResponse("Term of services deleted",status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-
 
 class TestimonyApiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
@@ -597,7 +458,6 @@ class FillFormAPiView(APIView):
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
-
 class AgentApiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
 
@@ -616,7 +476,7 @@ class AgentApiView(APIView):
     def get(self,request):
         try:
             queryset=Agent.objects.all()
-            return SuccessResponse(AgentSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
+            return SuccessResponse(AgentReadSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
 
@@ -644,3 +504,154 @@ class SingleAgentAPiView(APIView):
             return SuccessResponse("Agent deleted",status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+        
+class AgentMemberApiView(APIView):
+    parser_classes=[JSONParser,MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+            request_body=AgentMemberSerializer
+    )
+    def post(self,request):
+        try:
+            serializer=AgentMemberSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return SuccessResponse(serializer.data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self,request):
+        try:
+            queryset=AgentMember.objects.all()
+            return SuccessResponse(AgentMemberSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
+class SingleAgentMemberAPiView(APIView):
+    parser_classes=[JSONParser,MultiPartParser,FormParser]
+    
+    @swagger_auto_schema(
+            request_body=AgentMemberSerializer
+    )
+    def put(self,request,pk):
+        try:
+            instance=AgentMember.objects.get(pk=pk)
+            serializer=AgentMemberSerializer(instance=instance,data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return SuccessResponse("updated successfully",status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+        
+
+    def delete(self,request,pk):
+        try:
+            instance=AgentMember.objects.get(pk=pk)
+            instance.delete()
+            return SuccessResponse("Agent deleted",status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
+class HeroSectionApiView(APIView):
+    parser_classes=[JSONParser,MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+            request_body=HeroSectionSerializer
+    )
+    def post(self,request):
+        try:
+            serializer=HeroSectionSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return SuccessResponse(serializer.data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self,request):
+        try:
+            queryset=HeroSection.objects.all()
+            return SuccessResponse(HeroSectionSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
+class SingleHeroSectionAPiView(APIView):
+    parser_classes=[JSONParser,MultiPartParser,FormParser]
+    
+    @swagger_auto_schema(
+            request_body=HeroSectionSerializer
+    )
+    def put(self,request,pk):
+        try:
+            instance=HeroSection.objects.get(pk=pk)
+            serializer=HeroSectionSerializer(instance=instance,data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return SuccessResponse("updated successfully",status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+        
+
+    def delete(self,request,pk):
+        try:
+            instance=AgentMember.objects.get(pk=pk)
+            instance.delete()
+            return SuccessResponse("Agent deleted",status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
+class FeatureSectionApiView(APIView):
+    parser_classes=[JSONParser,MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+            request_body=FeatureSectionSerializer
+    )
+    def post(self,request):
+        try:
+            serializer=FeatureSectionSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return SuccessResponse(serializer.data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self,request):
+        try:
+            queryset=FeatureSection.objects.all()
+            return SuccessResponse(FeatureSectionSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
+class SingleFeatureSectionAPiView(APIView):
+    parser_classes=[JSONParser,MultiPartParser,FormParser]
+    
+    @swagger_auto_schema(
+            request_body=FeatureSectionSerializer
+    )
+    def put(self,request,pk):
+        try:
+            instance=FeatureSection.objects.get(pk=pk)
+            serializer=FeatureSectionSerializer(instance=instance,data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return SuccessResponse("updated successfully",status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+        
+
+    def delete(self,request,pk):
+        try:
+            instance=FeatureSection.objects.get(pk=pk)
+            instance.delete()
+            return SuccessResponse("Agent deleted",status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
+
+class HomeSection(APIView):
+    def get(self,request):
+        try:
+            pass
+            
+
+        except Exception as e:
+            pass

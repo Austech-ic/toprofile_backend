@@ -30,9 +30,6 @@ class AccountCreationSerializer(serializers.ModelSerializer):
             "username":{
                 "required":True
             },
-            "phone_number":{
-                "required":True
-            }
         }
 
     def validate(self, attrs):

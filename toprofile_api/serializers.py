@@ -2,11 +2,6 @@ from .models import *
 from rest_framework import serializers
 
 
-class ListingCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model=ListingCategory
-        fields="__all__"
-
 class BlogSerializer(serializers.ModelSerializer):
     class Meta:
         model=Blog
@@ -23,18 +18,9 @@ class PropertyInputSerializer(serializers.ModelSerializer):
         fields="__all__"
 
 class PropertyOutputSerializer(serializers.ModelSerializer):
-    monthly_payment=serializers.SerializerMethodField()
-    price_per_sqr=serializers.SerializerMethodField()
     class Meta:
         model=PropertyListing
         fields="__all__"
-
-    def get_price_per_sqr(self,obj):
-        return (obj.land_space * obj.price)
-    
-    def get_monthly_payment(self,obj):
-        return int(obj.price) // (12*obj.duration)
-    
     def to_representation(self, instance):
         representation= super().to_representation(instance)
         images=ImageAsset.objects.select_related("property")\
@@ -50,16 +36,15 @@ class ImageAssetSerializer(serializers.ModelSerializer):
             "image"
         ]
 
+class HeroSectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=HeroSection
+        fields="__all__"
 
-# class PrivatePolicySerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model=PrivatePolicy
-#         fields="__all__"
-
-# class TermsOfServiceSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model=TermsOfService
-#         fields="__all__"
+class FeatureSectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=FeatureSection
+        fields="__all__"
 
 class AboutUseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -71,19 +56,9 @@ class OurServiceSerializer(serializers.ModelSerializer):
         model=OurServices
         fields="__all__"
 
-#statement,termsofservices,privatepolicy
-class ReUsableSerializer(serializers.Serializer):
-    title=serializers.CharField(max_length=500)
-    content=serializers.CharField()
-
 class  OurTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model=OurTeam
-        fields="__all__"
-
-class HomePageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=HomePage
         fields="__all__"
 
 class TestimonySerializer(serializers.ModelSerializer):
@@ -91,14 +66,29 @@ class TestimonySerializer(serializers.ModelSerializer):
         model=Testimony
         fields="__all__"
 
-
 class FillFormserializer(serializers.ModelSerializer):
     class Meta:
         model=FillContactForm
         fields="__all__"
 
-
 class  AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model=Agent
         fields="__all__"
+    
+class  AgentReadSerializer(serializers.ModelSerializer):
+    agent=serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model=Agent
+        fields="__all__"
+    
+    def get_agent(self,obj):
+        return AgentMemberSerializer(obj.agent.all(),many=True).data
+
+class  AgentMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=AgentMember
+        fields="__all__"
+
+class ReUsableSerializer(serializers.Serializer):
+    content=serializers.CharField(required=True)
