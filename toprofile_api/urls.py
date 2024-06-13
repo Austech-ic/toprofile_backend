@@ -25,9 +25,13 @@ SingleTermsofserviceAPiView,
     SingleTestimonyApiView,
     FillFormAPiView,
     AgentApiView,
-    SingleAgentAPiView
+    SingleAgentAPiView,
+    HomeSectionApiView,
+    AdminAppearanceApiView
 )
 urlpatterns = [
+    path("home/",HomeSectionApiView.as_view()),
+    path("admin_appearence/",AdminAppearanceApiView.as_view()),
     path("blog/",BlogApiView.as_view()),
     path("blog/<int:pk>/",SingleBlogApiView.as_view()),
     path("property/",PropertyApiView.as_view()),

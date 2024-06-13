@@ -20,21 +20,18 @@ class AccountCreationSerializer(serializers.ModelSerializer):
             "phone_number",
             "email",
             "password",
+            "address",
             "terms_condition"
 
         ]
         extra_kwargs={
             "password":{
                 "write_only":True
-            },
-            "username":{
-                "required":True
-            },
+            }
+
         }
 
     def validate(self, attrs):
-        if User.objects.filter(username=attrs['username']).exists():
-            raise RuntimeError("username : This field already exist")
         if User.objects.filter(email=attrs['email']).exists():
             raise RuntimeError("email : This field already exist")
         else:

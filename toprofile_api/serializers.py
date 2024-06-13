@@ -91,4 +91,10 @@ class  AgentMemberSerializer(serializers.ModelSerializer):
         fields="__all__"
 
 class ReUsableSerializer(serializers.Serializer):
+    id=serializers.IntegerField(read_only=True)
     content=serializers.CharField(required=True)
+
+class AdminAppearanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=AdminAppearance
+        fields="__all__"

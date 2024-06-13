@@ -49,6 +49,7 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
     username=models.CharField(_("Username"),max_length=400,null=True,blank=True)
     phone_number=models.CharField(_("Phone Number"),max_length=400,null=True,blank=True)
     email=models.EmailField(_("Email Address"),unique=True,db_index=True)
+    address=models.CharField(max_length=1000,null=True)
     is_staff = models.BooleanField(_("staff status"), default=False )
     is_active = models.BooleanField( _("active"),default=True,)
     is_verified = models.BooleanField( _("Verified"),default=False)

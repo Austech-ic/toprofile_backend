@@ -137,3 +137,14 @@ class TermsOfService(models.Model):
     content=models.TextField()
 
 
+class AdminAppearance(models.Model):
+    def upload_to(instance, filename):
+        url = re.sub(
+            SPECIAL_CHARS_REGEX,
+            "_",
+            "images/admin/{filename}".format(filename=filename),
+        )
+        return url
+    logo=models.ImageField(upload_to=upload_to,null=True)
+    icon=models.ImageField(upload_to=upload_to,null=True)
+    background=models.ImageField(upload_to=upload_to,null=True)

@@ -17,7 +17,8 @@ from .serializers import (
     AgentSerializer,
     ReUsableSerializer,
     AgentMemberSerializer,
-    AgentReadSerializer
+    AgentReadSerializer,
+    AdminAppearanceSerializer
 )
 from rest_framework.parsers import JSONParser,MultiPartParser,FormParser
 from drf_yasg.openapi import IN_QUERY, Parameter
@@ -272,6 +273,8 @@ class TermsOfServiceApiView(APIView):
         try:
             serializer=ReUsableSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
+            #delete First
+
             TermsOfService.objects.create(**serializer.validated_data)
             return SuccessResponse(serializer.data,status=status.HTTP_200_OK)
         except Exception as e:
@@ -646,12 +649,52 @@ class SingleFeatureSectionAPiView(APIView):
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
 
-
-class HomeSection(APIView):
+class HomeSectionApiView(APIView):
     def get(self,request):
         try:
-            pass
-            
+            hero=HeroSection.objects.last()
+            about=AboutUs.objects.last()
+            service=OurServices.objects.last()
+            featured=FeatureSection.objects.last()
+            agent=Agent.objects.last()
+            team=TermsOfService.objects.last()
+            policy=PrivatePolicy.objects.last()
 
+            data={
+                "hero_section":HeroSectionSerializer(hero).data,
+                "about_us":AboutUseSerializer(about).data,
+                "service":OurServiceSerializer(service).data,
+                "feature":FeatureSectionSerializer(featured).data,
+                "agent":AgentReadSerializer(agent).data,
+                "term_of_service":ReUsableSerializer(team).data,
+                "policy":ReUsableSerializer(policy).data
+            }
+            return SuccessResponse(data,status=status.HTTP_200_OK)
         except Exception as e:
-            pass
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminAppearanceApiView(APIView):
+    @swagger_auto_schema(
+            request_body=AdminAppearanceSerializer
+    )
+    def post(self,request):
+        try:
+            serializer=AdminAppearanceSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            AdminAppearance.objects.all().delete()
+            serializer.save()
+            return SuccessResponse(serializer.data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+        
+    def get(self,request):
+        try:
+            instance=AdminAppearance.objects.last()
+            serializer=AdminAppearanceSerializer(instance).data
+            return SuccessResponse(serializer,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+        
+
+        
