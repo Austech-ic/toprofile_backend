@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from utils.error_handler import error_handler
 from .models import *
 from utils.responses import SuccessResponse,FailureResponse
+from django.db.models import Count
 from .serializers import (
     AboutUseSerializer,
     OurServiceSerializer,
@@ -18,7 +20,8 @@ from .serializers import (
     ReUsableSerializer,
     AgentMemberSerializer,
     AgentReadSerializer,
-    AdminAppearanceSerializer
+    AdminAppearanceSerializer,
+    DeviceSerializer
 )
 from rest_framework.parsers import JSONParser,MultiPartParser,FormParser
 from drf_yasg.openapi import IN_QUERY, Parameter
@@ -192,8 +195,8 @@ class AboutApiView(APIView):
 
     def get(self,request):
         try:
-            queryset=AboutUs.objects.first()
-            return SuccessResponse(AboutUseSerializer(queryset).data,status=status.HTTP_200_OK)
+            queryset=AboutUs.objects.all()
+            return SuccessResponse(AboutUseSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
 
@@ -236,7 +239,7 @@ class OurServicesApiView(APIView):
 
     def get(self,request):
         try:
-            queryset=OurServices.objects.first()
+            queryset=OurServices.objects.all()
             return SuccessResponse(OurServiceSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
@@ -282,8 +285,8 @@ class TermsOfServiceApiView(APIView):
 
     def get(self,request):
         try:
-            queryset=TermsOfService.objects.first()
-            return SuccessResponse(ReUsableSerializer(queryset).data,status=status.HTTP_200_OK)
+            queryset=TermsOfService.objects.all()
+            return SuccessResponse(ReUsableSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
 
@@ -328,8 +331,8 @@ class PrivatePolicyApiView(APIView):
 
     def get(self,request):
         try:
-            queryset=PrivatePolicy.objects.first()
-            return SuccessResponse(ReUsableSerializer(queryset).data,status=status.HTTP_200_OK)
+            queryset=PrivatePolicy.objects.all()
+            return SuccessResponse(ReUsableSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
 
@@ -652,27 +655,26 @@ class SingleFeatureSectionAPiView(APIView):
 class HomeSectionApiView(APIView):
     def get(self,request):
         try:
-            hero=HeroSection.objects.last()
-            about=AboutUs.objects.last()
-            service=OurServices.objects.last()
-            featured=FeatureSection.objects.last()
-            agent=Agent.objects.last()
-            team=TermsOfService.objects.last()
-            policy=PrivatePolicy.objects.last()
+            hero=HeroSection.objects.all()
+            about=AboutUs.objects.all()
+            service=OurServices.objects.all()
+            featured=FeatureSection.objects.all()
+            agent=Agent.objects.all()
+            team=TermsOfService.objects.all()
+            policy=PrivatePolicy.objects.all()
 
             data={
-                "hero_section":HeroSectionSerializer(hero).data,
-                "about_us":AboutUseSerializer(about).data,
-                "service":OurServiceSerializer(service).data,
-                "feature":FeatureSectionSerializer(featured).data,
-                "agent":AgentReadSerializer(agent).data,
-                "term_of_service":ReUsableSerializer(team).data,
-                "policy":ReUsableSerializer(policy).data
+                "hero_section":HeroSectionSerializer(hero,many=True).data,
+                "about_us":AboutUseSerializer(about,many=True).data,
+                "service":OurServiceSerializer(service,many=True).data,
+                "feature":FeatureSectionSerializer(featured,many=True).data,
+                "agent":AgentReadSerializer(agent,many=True).data,
+                "term_of_service":ReUsableSerializer(team,many=True).data,
+                "policy":ReUsableSerializer(policy,many=True).data
             }
             return SuccessResponse(data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-
 
 class AdminAppearanceApiView(APIView):
     @swagger_auto_schema(
@@ -696,5 +698,44 @@ class AdminAppearanceApiView(APIView):
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
-
+#DashBoard
+class DashBoardApiView(APIView):
+    def get(self,request):
+        try:
+            recent_post=Blog.objects.count()            
+            agent=Agent.objects.count()
+            view_property=PropertyListing.objects.count()
+            device_counts = Device.objects.values('name').annotate(name_count=Count('name')).order_by('-name_count').all()
+            visitor = MostViewPage.objects.count()
+            res={
+                "visitor":visitor,
+                "blogPost":recent_post,
+                "property":view_property,
+                "agent":agent,
+                "top_browser":DeviceSerializer(device_counts,many=True).data if device_counts != None else None
+            }
+            return SuccessResponse(res,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+#Home
         
+class HomeApiView(APIView):
+    def get(self,request):
+        try:
+            feature_property=PropertyListing.objects.order_by("-created_at").all()  
+            our_service=OurServices.objects.all()
+            testimony=Testimony.objects.all()
+            about_us=AboutUs.objects.all()
+            our_agent=Agent.objects.all()
+            res={
+                "feature_property":PropertyOutputSerializer(feature_property,many=True).data,
+                "our_service":OurServiceSerializer(our_service,many=True).data,
+                "testimony":TestimonySerializer(testimony,many=True).data,
+                "about_us":AboutUseSerializer(about_us,many=True).data,
+                "agent":AgentReadSerializer(our_agent,many=True).data
+            }
+            return SuccessResponse(res,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
+

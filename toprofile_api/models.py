@@ -148,3 +148,11 @@ class AdminAppearance(models.Model):
     logo=models.ImageField(upload_to=upload_to,null=True)
     icon=models.ImageField(upload_to=upload_to,null=True)
     background=models.ImageField(upload_to=upload_to,null=True)
+
+
+
+class Device(models.Model):
+    name=models.CharField(max_length=30,null=False)
+
+class MostViewPage(models.Model):
+    name=models.CharField(max_length=200,null=False)

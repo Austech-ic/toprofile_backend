@@ -98,3 +98,8 @@ class AdminAppearanceSerializer(serializers.ModelSerializer):
     class Meta:
         model=AdminAppearance
         fields="__all__"
+
+
+class DeviceSerializer(serializers.Serializer):
+    name=serializers.CharField()
+    name_count=serializers.IntegerField()

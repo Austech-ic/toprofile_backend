@@ -27,10 +27,14 @@ SingleTermsofserviceAPiView,
     AgentApiView,
     SingleAgentAPiView,
     HomeSectionApiView,
-    AdminAppearanceApiView
+    AdminAppearanceApiView,
+    HomeApiView,
+    DashBoardApiView
 )
 urlpatterns = [
-    path("home/",HomeSectionApiView.as_view()),
+    path("content_section/",HomeSectionApiView.as_view()),
+    path("home/",HomeApiView.as_view()),
+    path("dashboard/",DashBoardApiView.as_view()),
     path("admin_appearence/",AdminAppearanceApiView.as_view()),
     path("blog/",BlogApiView.as_view()),
     path("blog/<int:pk>/",SingleBlogApiView.as_view()),
