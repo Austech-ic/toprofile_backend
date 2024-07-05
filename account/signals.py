@@ -20,15 +20,5 @@ def send_otp_to_email(sender, instance, created, **kwargs):
     if created:
         try:
             send_emails(instance.email)
-        #     otp=get_random_string(5,allowed_chars=string.digits)
-        #     subject = 'Confirm Your Email Address'
-        #     message = render_to_string('accounts/email_confirmation.html', {
-        #     "otp":otp
-        # })
-        #     from_email = settings.EMAIL_HOST_USER
-        #     to_email = instance.email
-        #     send_mail(subject, message, from_email, [to_email], fail_silently=False)
-        #     #save the email and the otp to email verification table
-        #     EmailVerification.objects.create(email=instance.email,otp=otp)
         except Exception as e:
             print(f'Error sending confirmation email: {e}')
