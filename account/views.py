@@ -38,6 +38,7 @@ class LoginApiView(TokenObtainPairView):
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
+            print(serializer.validated_data)
             data=serializer.validated_data
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_404_NOT_FOUND)

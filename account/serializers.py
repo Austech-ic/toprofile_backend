@@ -54,20 +54,20 @@ class TokenObtainPairSerializer(TokenObtainSerializer):
             return data
         raise serializers.ValidationError("email does not exist")
     
-    # def validate(self, attrs):
-    #         data = super().validate(attrs)
-    #     # check if the user is still is active or not
-    #         check_isactive(self.user)
-    #         # check if the user is verified before he can successfully login in
-    #         check_verification(self.user) 
-    #         refresh = self.get_token(self.user)
-    #         data["refresh"] = str(refresh)
-    #         data["access"] = str(refresh.access_token)
+    def validate(self, attrs):
+            data = super().validate(attrs)
+        # # check if the user is still is active or not
+        #     check_isactive(self.user)
+        #     # check if the user is verified before he can successfully login in
+        #     check_verification(self.user) 
+            refresh = self.get_token(self.user)
+            data["refresh"] = str(refresh)
+            data["access"] = str(refresh.access_token)
 
-    #         if api_settings.UPDATE_LAST_LOGIN:
-    #             update_last_login(None,self.user)
+            if api_settings.UPDATE_LAST_LOGIN:
+                update_last_login(None,self.user)
 
-    #         return data
+            return data
     
 class EmailVerificationSerailaizer(serializers.Serializer):
     email=serializers.EmailField(required=True)
@@ -82,10 +82,7 @@ class EmailVerificationSerailaizer(serializers.Serializer):
     
 class UserEmailVerificationSerailaizer(serializers.Serializer):
     email=serializers.EmailField(required=True,write_only=True)
-
-            
-
-
+         
 class ForgetPasswordInputSerializer(serializers.Serializer):
     email=serializers.CharField(required=True,max_length=20)
     password=serializers.CharField(required=True, write_only=True)
@@ -108,7 +105,6 @@ class ForgetPasswordInputSerializer(serializers.Serializer):
             raise serializers.ValidationError(e)
         return user
     
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model=get_user_model()

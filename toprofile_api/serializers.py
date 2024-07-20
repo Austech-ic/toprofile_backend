@@ -6,6 +6,11 @@ class BlogSerializer(serializers.ModelSerializer):
     class Meta:
         model=Blog
         fields="__all__"
+        extra_kwargs={
+            "slug":{
+                "read_only":True
+            }
+        }
 
 class PropertyInputSerializer(serializers.ModelSerializer):
     images=serializers.ListField(
@@ -15,7 +20,9 @@ class PropertyInputSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model=PropertyListing
-        fields="__all__"
+        exclude=[
+            "slug"
+        ]
 
 class PropertyOutputSerializer(serializers.ModelSerializer):
     class Meta:

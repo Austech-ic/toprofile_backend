@@ -2,6 +2,8 @@ from django.db import models
 import uuid
 import re
 from .constant import STATUS
+from datetime import datetime
+from django.utils.text import slugify
 
 SPECIAL_CHARS_REGEX = "[^a-zA-Z0-9 \n\.]"
 
@@ -14,19 +16,33 @@ class Blog(models.Model):
         )
         return url
     title=models.TextField(null=True)
+    slug=models.SlugField(unique=True,blank=True)
     body=models.TextField(null=False,blank=False)
     author_name=models.CharField(max_length=300,null=True)
     image=models.ImageField(upload_to=upload_to,null=True)
     reading_time=models.CharField(max_length=300,null=True)
     created_at=models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            timestamp_str = datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]
+            self.slug = slugify(f'{self.title}-{timestamp_str}')
+        super(Blog, self).save(*args, **kwargs)
+
 class PropertyListing(models.Model):
     body=models.TextField()
+    slug=models.SlugField(unique=True,blank=True)
     title=models.TextField()
     address=models.CharField(max_length=500,null=True)
     land_space=models.IntegerField(default=0)
     amount=models.DecimalField(max_digits=10,decimal_places=0)
     created_at=models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            timestamp_str = datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]
+            self.slug = slugify(f'{self.title}-{timestamp_str}')
+        super(PropertyListing, self).save(*args, **kwargs)
 
 class ImageAsset(models.Model):
     def upload_to(instance, filename):

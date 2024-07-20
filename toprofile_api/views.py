@@ -62,9 +62,9 @@ class BlogApiView(APIView):
 class SingleBlogApiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
 
-    def get(self,request,pk):
+    def get(self,request,slug):
         try:
-            instance=Blog.objects.get(pk=pk)
+            instance=Blog.objects.get(slug=slug)
             return SuccessResponse(BlogSerializer(instance).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
@@ -72,9 +72,9 @@ class SingleBlogApiView(APIView):
     @swagger_auto_schema(
             request_body=BlogSerializer
     )
-    def put(self,request,pk):
+    def put(self,request,slug):
         try:
-            instance=Blog.objects.get(pk=pk)
+            instance=Blog.objects.get(slug=slug)
             serializer=BlogSerializer(instance=instance,data=request.data)
             serializer.is_valid(raise_exception=True)
             data=serializer.save()
@@ -83,9 +83,9 @@ class SingleBlogApiView(APIView):
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
 
-    def delete(self,request,pk):
+    def delete(self,request,slug):
         try:
-            instance=Blog.objects.get(pk=pk)
+            instance=Blog.objects.get(slug=slug)
             instance.delete()
             return SuccessResponse("Blog deleted",status=status.HTTP_200_OK)
         except Exception as e:
@@ -140,9 +140,9 @@ class PropertyApiView(APIView):
 class SinglePropertyApiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
 
-    def get(self,request,pk):
+    def get(self,request,slug):
         try:
-            instance=PropertyListing.objects.get(pk=pk)
+            instance=PropertyListing.objects.get(slug=slug)
             return SuccessResponse(PropertyOutputSerializer(instance).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
@@ -150,9 +150,9 @@ class SinglePropertyApiView(APIView):
     @swagger_auto_schema(
             request_body=PropertyInputSerializer
     )
-    def put(self,request,pk):
+    def put(self,request,slug):
         try:
-            instance=PropertyListing.objects.get(pk=pk)
+            instance=PropertyListing.objects.get(slug=slug)
             serializer=PropertyInputSerializer(instance=instance,data=request.data)
             serializer.is_valid(raise_exception=True)
             images=serializer.validated_data.pop("images",None)
@@ -168,9 +168,9 @@ class SinglePropertyApiView(APIView):
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
-    def delete(self,request,pk):
+    def delete(self,request,slug):
         try:
-            instance=PropertyListing.objects.get(pk=pk)
+            instance=PropertyListing.objects.get(slug=slug)
             #delete the image associated to that instance
             ImageAsset.objects.filter(property=instance).delete()
             instance.delete()
@@ -655,13 +655,13 @@ class SingleFeatureSectionAPiView(APIView):
 class HomeSectionApiView(APIView):
     def get(self,request):
         try:
-            hero=HeroSection.objects.all()
-            about=AboutUs.objects.all()
-            service=OurServices.objects.all()
-            featured=FeatureSection.objects.all()
-            agent=Agent.objects.all()
-            team=TermsOfService.objects.all()
-            policy=PrivatePolicy.objects.all()
+            hero=HeroSection.objects.all()[:10]
+            about=AboutUs.objects.all()[:10]
+            service=OurServices.objects.all()[:10]
+            featured=FeatureSection.objects.all()[:10]
+            agent=Agent.objects.all()[:10]
+            team=TermsOfService.objects.all()[:10]
+            policy=PrivatePolicy.objects.all()[:10]
 
             data={
                 "hero_section":HeroSectionSerializer(hero,many=True).data,
@@ -722,11 +722,11 @@ class DashBoardApiView(APIView):
 class HomeApiView(APIView):
     def get(self,request):
         try:
-            feature_property=PropertyListing.objects.order_by("-created_at").all()  
-            our_service=OurServices.objects.all()
-            testimony=Testimony.objects.all()
-            about_us=AboutUs.objects.all()
-            our_agent=Agent.objects.all()
+            feature_property=PropertyListing.objects.order_by("-created_at").all()[:10] 
+            our_service=OurServices.objects.all()[:10]
+            testimony=Testimony.objects.all()[:10]
+            about_us=AboutUs.objects.all()[:10]
+            our_agent=Agent.objects.all()[:10]
             res={
                 "feature_property":PropertyOutputSerializer(feature_property,many=True).data,
                 "our_service":OurServiceSerializer(our_service,many=True).data,
