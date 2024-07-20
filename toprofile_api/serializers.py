@@ -28,6 +28,7 @@ class PropertyOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model=PropertyListing
         fields="__all__"
+        
     def to_representation(self, instance):
         representation= super().to_representation(instance)
         images=ImageAsset.objects.select_related("property")\
