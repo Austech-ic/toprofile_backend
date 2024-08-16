@@ -5,6 +5,8 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.core.mail import send_mail
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.core.mail import EmailMultiAlternatives
+from django.utils.html import strip_tags
 
 def send_emails(email,instance=None):
         try:
@@ -16,7 +18,12 @@ def send_emails(email,instance=None):
         })
             from_email = settings.EMAIL_HOST_USER
             to_email = email
-            send_mail(subject, message, from_email, [to_email], fail_silently=False)
+            text_content = strip_tags(message)
+            # send_mail(subject, message, from_email, [to_email], fail_silently=False)
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
+            msg.attach_alternative(message, "text/html")
+            msg.send()
+
             #save the email and the otp to email verification table
             EmailVerification.objects.filter(email=email).delete()
             EmailVerification.objects.create(email=email,otp=otp)
