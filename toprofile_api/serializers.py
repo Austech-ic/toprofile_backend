@@ -1,10 +1,20 @@
 from .models import *
 from rest_framework import serializers
+from drf_extra_fields.fields import HybridImageField
 
+class CustomHybridImageField(HybridImageField):
+    class Meta:
+        swagger_schema_fields = {
+            'type': 'String',
+            'title': 'Image Content',
+            'description': 'Content of the base64 encoded images',
+            'read_only': False  # <-- FIX
+        }
 
 class BlogSerializer(serializers.ModelSerializer):
     comment=serializers.SerializerMethodField()
     view=serializers.SerializerMethodField()
+    image=CustomHybridImageField(required=False)
     class Meta:
         model=Blog
         fields="__all__"
@@ -19,40 +29,39 @@ class BlogSerializer(serializers.ModelSerializer):
     
     def get_view(self,obj):
         return sum([blog.count for blog in obj.blogView.all()])
-
-class PropertyInputSerializer(serializers.ModelSerializer):
-    images=serializers.ListField(
-        child=serializers.ImageField(),
-        default=[],
-        write_only=True,
-    )
-    class Meta:
-        model=PropertyListing
-        exclude=[
-            "slug"
-        ]
-
-class PropertyOutputSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=PropertyListing
-        fields="__all__"
-        
-    def to_representation(self, instance):
-        representation= super().to_representation(instance)
-        images=ImageAsset.objects.select_related("property")\
-            .filter(property=instance)
-        representation["images"]=ImageAssetSerializer(images,many=True).data
-        return representation
-
+    
 class ImageAssetSerializer(serializers.ModelSerializer):
+    image=CustomHybridImageField(required=False)
     class Meta:
         model=ImageAsset
         fields=[
             "id",
             "image"
         ]
+        extra_kwargs={
+            "id":{
+                "read_only":True
+            }
+           
+        }
+
+class PropertyInputSerializer(serializers.ModelSerializer):
+    propertyImages=ImageAssetSerializer(many=True)
+    class Meta:
+        model=PropertyListing
+        exclude=[
+            "slug"
+        ]
+        
+class PropertyOutputSerializer(serializers.ModelSerializer):
+    propertyImages=ImageAssetSerializer(many=True)
+    class Meta:
+        model=PropertyListing
+        fields="__all__"
+        
 
 class HeroSectionSerializer(serializers.ModelSerializer):
+    image=CustomHybridImageField(required=False)
     class Meta:
         model=HeroSection
         fields="__all__"
@@ -63,6 +72,7 @@ class FeatureSectionSerializer(serializers.ModelSerializer):
         fields="__all__"
 
 class AboutUseSerializer(serializers.ModelSerializer):
+    image=CustomHybridImageField(required=False)
     class Meta:
         model=AboutUs
         fields="__all__"
@@ -73,11 +83,13 @@ class OurServiceSerializer(serializers.ModelSerializer):
         fields="__all__"
 
 class  OurTeamSerializer(serializers.ModelSerializer):
+    image=CustomHybridImageField(required=False)
     class Meta:
         model=OurTeam
         fields="__all__"
 
 class TestimonySerializer(serializers.ModelSerializer):
+    image=CustomHybridImageField(required=False)
     class Meta:
         model=Testimony
         fields="__all__"
@@ -102,6 +114,7 @@ class  AgentReadSerializer(serializers.ModelSerializer):
         return AgentMemberSerializer(obj.agent.all(),many=True).data
 
 class  AgentMemberSerializer(serializers.ModelSerializer):
+    image=CustomHybridImageField(required=False)
     class Meta:
         model=AgentMember
         fields="__all__"
@@ -114,7 +127,6 @@ class AdminAppearanceSerializer(serializers.ModelSerializer):
     class Meta:
         model=AdminAppearance
         fields="__all__"
-
 
 class DeviceSerializer(serializers.Serializer):
     name=serializers.CharField()

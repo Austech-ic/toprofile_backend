@@ -58,7 +58,7 @@ class ImageAsset(models.Model):
         )
         return url
     image=models.ImageField(upload_to=upload_to)
-    property=models.ForeignKey(PropertyListing,on_delete=models.CASCADE,null=True,blank=True)
+    property=models.ForeignKey(PropertyListing,on_delete=models.CASCADE,null=True,blank=True,related_name="propertyImages")
 
 class HeroSection(models.Model):
     def upload_to(instance, filename):
