@@ -97,9 +97,9 @@ else:
     DATABASES = {
                 "default":{
                 'ENGINE': 'django.db.backends.postgresql',
-                'NAME': '',
-                'USER': '',
-                'PASSWORD': '',
+                'NAME': 'jaswbwsw_toprofile',
+                'USER': 'jaswbwsw_toprofile_db',
+                'PASSWORD': 'J6~jyAdO?rM(',
                 'HOST': 'localhost',
                 'PORT': 5432,
             }
