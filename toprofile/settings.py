@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-e62y#a!l18o*iqaip#+*-)0=+#__-jj+gitmu(r+t^rcm1fx4-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["127.0.0.1","www.backend.toprofile.com","backend.toprofile.com"]
 
@@ -227,8 +227,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 if not DEBUG:
-    MEDIA_ROOT="/home/jaswbwsw/media.backend.toprofile.com/"
-    MEDIA_URL="https://media.backend.toprofile.com/"
+    MEDIA_ROOT="/home/jaswbwsw/media.jaswillproperties.cloud/"
+    MEDIA_URL="https://media.jaswillproperties.cloud/"
     STATIC_ROOT = '/home/jaswbwsw/public_html/toprofile_static'
 else:
     MEDIA_URL="/media/"

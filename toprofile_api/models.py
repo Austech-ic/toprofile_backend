@@ -16,7 +16,7 @@ class Blog(models.Model):
         )
         return url
     title=models.TextField(null=True)
-    slug=models.SlugField(unique=True,blank=True)
+    slug=models.SlugField(unique=True,blank=True,max_length=500)
     body=models.TextField(null=False,blank=False)
     author_name=models.CharField(max_length=300,null=True)
     image=models.ImageField(upload_to=upload_to,null=True)
@@ -36,7 +36,7 @@ class BlogViews(models.Model):
 
 class PropertyListing(models.Model):
     body=models.TextField()
-    slug=models.SlugField(unique=True,blank=True)
+    slug=models.SlugField(unique=True,blank=True,max_length=500)
     title=models.TextField()
     address=models.CharField(max_length=500,null=True)
     land_space=models.IntegerField(default=0)
