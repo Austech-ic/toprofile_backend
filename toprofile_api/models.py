@@ -28,9 +28,11 @@ class Blog(models.Model):
             timestamp_str = datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]
             self.slug = slugify(f'{self.title}-{timestamp_str}')
         super(Blog, self).save(*args, **kwargs)
-
-# class BlogComments(models.Model):
-
+        
+class BlogViews(models.Model):
+    blog=models.ForeignKey(Blog,on_delete=models.CASCADE,related_name="blogView")
+    count=models.BigIntegerField(default=1)
+    created_at=models.DateTimeField(auto_now_add=True)
 
 class PropertyListing(models.Model):
     body=models.TextField()

@@ -72,6 +72,17 @@ class SingleBlogApiView(APIView):
     def get(self,request,slug):
         try:
             instance=Blog.objects.get(slug=slug)
+            #update the View:
+            obj,created=BlogViews.objects.get_or_create(
+                blog=instance,
+                defaults={
+                    "blog":instance
+                   
+                }
+            )
+            if not created:
+                obj.count +=1
+                obj.save()
             return SuccessResponse(BlogSerializer(instance).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)

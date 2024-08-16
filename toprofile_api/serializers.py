@@ -18,7 +18,7 @@ class BlogSerializer(serializers.ModelSerializer):
         return int(20)
     
     def get_view(self,obj):
-        return int(20)
+        return sum([blog.count for blog in obj.blogView.all()])
 
 class PropertyInputSerializer(serializers.ModelSerializer):
     images=serializers.ListField(
