@@ -226,20 +226,14 @@ EMAIL_HOST_PASSWORD =config('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-MEDIA_URL="/media/"
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME':config('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY':config('CLOUDINARY_API_KEY'),
-    'API_SECRET':config('CLOUDINARY_API_SECRET')
-}
-
-STATIC_ROOT = BASE_DIR / "staticfiles"
-
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
+if not DEBUG:
+    MEDIA_ROOT="/home/jaswbwsw/media.backend.toprofile.com/"
+    MEDIA_URL="https://media.backend.toprofile.com/"
+    STATIC_ROOT = '/home/jaswbwsw/public_html/toprofile_static'
+else:
+    MEDIA_URL="/media/"
+    STATIC_ROOT = BASE_DIR / "staticfiles"
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 CORS_EXPOSE_HEADERS = [
     "auth_password",
