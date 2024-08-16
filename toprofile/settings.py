@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-e62y#a!l18o*iqaip#+*-)0=+#__-jj+gitmu(r+t^rcm1fx4-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1"]
+ALLOWED_HOSTS = ["127.0.0.1","www.backend.toprofile.com","backend.toprofile.com"]
 
 
 # Application definition
@@ -240,7 +240,9 @@ CORS_EXPOSE_HEADERS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080"
+    "http://localhost:8080",
+    "https://backend.toprofile.com"
+    
 ]
 CORS_ALLOW_ALL_ORIGINS=False
 
