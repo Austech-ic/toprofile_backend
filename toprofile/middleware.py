@@ -1,6 +1,8 @@
 from toprofile_api.models import Device,MostViewPage
 from django.utils.deprecation import MiddlewareMixin
-
+from datetime import datetime,timezone
+from toprofile_api.constant import MONTH
+import calendar
 class DeviceTrackerMiddleware(MiddlewareMixin):
         
     def process_request(self, request):
@@ -37,7 +39,18 @@ class MostViewPageMiddleware(MiddlewareMixin):
         response = self.get_response(request)
         #home,property,blog
         if "home" in request.path:
-            MostViewPage.objects.create(
-                    name="HOME"
-                )
+            date_obj = datetime.utcnow().replace(tzinfo=timezone.utc)
+            month=date_obj.month
+            year=date_obj.year
+            obj,created=MostViewPage.objects.get_or_create(
+                month=calendar.month_abbr[month],
+                year=str(year),
+                defaults={
+                    "month":calendar.month_abbr[month],
+                    "year":str(year)
+                }
+            )
+            if not created:
+                obj.count +=1
+                obj.save()
         return response

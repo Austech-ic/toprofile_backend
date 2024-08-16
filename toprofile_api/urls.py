@@ -29,9 +29,11 @@ SingleTermsofserviceAPiView,
     HomeSectionApiView,
     AdminAppearanceApiView,
     HomeApiView,
-    DashBoardApiView
+    DashBoardApiView,
+    AnalyticsAPiView
 )
 urlpatterns = [
+    path("vistor/analytics/",AnalyticsAPiView.as_view()),
     path("content_section/",HomeSectionApiView.as_view()),
     path("home/",HomeApiView.as_view()),
     path("dashboard/",DashBoardApiView.as_view()),

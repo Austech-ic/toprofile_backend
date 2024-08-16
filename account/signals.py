@@ -19,6 +19,6 @@ from .helpers import send_emails
 def send_otp_to_email(sender, instance, created, **kwargs):
     if created:
         try:
-            send_emails(instance.email)
+            send_emails(instance.email,instance)
         except Exception as e:
             print(f'Error sending confirmation email: {e}')

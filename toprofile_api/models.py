@@ -29,6 +29,9 @@ class Blog(models.Model):
             self.slug = slugify(f'{self.title}-{timestamp_str}')
         super(Blog, self).save(*args, **kwargs)
 
+# class BlogComments(models.Model):
+
+
 class PropertyListing(models.Model):
     body=models.TextField()
     slug=models.SlugField(unique=True,blank=True)
@@ -166,9 +169,11 @@ class AdminAppearance(models.Model):
     background=models.ImageField(upload_to=upload_to,null=True)
 
 
-
 class Device(models.Model):
     name=models.CharField(max_length=30,null=False)
 
 class MostViewPage(models.Model):
-    name=models.CharField(max_length=200,null=False)
+    count=models.BigIntegerField(default=1)
+    month=models.CharField(max_length=20,null=True)
+    year=models.CharField(null=True,max_length=7)
+    created_at=models.DateTimeField(auto_now_add=True,null=True)

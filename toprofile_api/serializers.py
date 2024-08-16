@@ -3,6 +3,8 @@ from rest_framework import serializers
 
 
 class BlogSerializer(serializers.ModelSerializer):
+    comment=serializers.SerializerMethodField()
+    view=serializers.SerializerMethodField()
     class Meta:
         model=Blog
         fields="__all__"
@@ -11,6 +13,12 @@ class BlogSerializer(serializers.ModelSerializer):
                 "read_only":True
             }
         }
+
+    def get_comment(self,obj):
+        return int(20)
+    
+    def get_view(self,obj):
+        return int(20)
 
 class PropertyInputSerializer(serializers.ModelSerializer):
     images=serializers.ListField(

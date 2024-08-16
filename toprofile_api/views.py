@@ -1,8 +1,10 @@
+from datetime import timezone
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from utils.error_handler import error_handler
 from .models import *
+from .constant import MONTH
 from utils.responses import SuccessResponse,FailureResponse
 from django.db.models import Count
 from .serializers import (
@@ -27,7 +29,8 @@ from rest_framework.parsers import JSONParser,MultiPartParser,FormParser
 from drf_yasg.openapi import IN_QUERY, Parameter
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-        
+from .helpers import get_analytics
+from django.db.models import Sum
 class BlogApiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
    
@@ -51,11 +54,15 @@ class BlogApiView(APIView):
     )
     def get(self,request):
         try:
-            page = int(request.GET.get("page", 0))
+            page = int(request.GET.get("page", 1))
             limit = int(request.GET.get("limit", 10))
+            queryset=None
             queryset=Blog.objects.order_by("-created_at").all()
-            paginator = queryset[(page * limit) : (page * limit) + limit]
-            return SuccessResponse(BlogSerializer(paginator,many=True).data,status=status.HTTP_200_OK)
+            paginator = queryset[((page-1) * limit):((page-1) *limit) + limit]
+            total_items=len(queryset)
+            return SuccessResponse(BlogSerializer(paginator,many=True).data,status=status.HTTP_200_OK,total_items=total_items,
+                                   page=page,limit=limit
+                                   )
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
@@ -104,8 +111,8 @@ class PropertyApiView(APIView):
     )
     def get(self,request):
         try:
-            page = int(request.GET.get("page", 0))
-            limit = int(request.GET.get("limit", 20))
+            page = int(request.GET.get("page", 1))
+            limit = int(request.GET.get("limit", 10))
             minprice=int(request.GET.get("minprice",0))
             maxprice=int(request.GET.get("maxprice",0))
             queryset=PropertyListing.objects.order_by("-created_at").all()
@@ -115,8 +122,12 @@ class PropertyApiView(APIView):
             if maxprice !=0:
                 queryset=queryset.filter(amount__lte=maxprice)
 
-            paginator = queryset[(page * limit) : (page * limit) + limit]
-            return SuccessResponse(PropertyOutputSerializer(paginator,many=True).data,status=status.HTTP_200_OK)
+            paginator = queryset[((page-1) * limit):((page-1) *limit) + limit]
+            total_items=len(queryset)
+            return SuccessResponse(PropertyOutputSerializer(paginator,many=True).data,status=status.HTTP_200_OK,
+                                   total_items=total_items,
+                                   page=page,limit=limit
+                                   )
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
     @swagger_auto_schema(
@@ -132,7 +143,6 @@ class PropertyApiView(APIView):
             if images:
                 for image in images:
                     ImageAsset.objects.create(property=data,image=image)
-
             return SuccessResponse(PropertyOutputSerializer(data).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
@@ -376,10 +386,23 @@ class OurTeamApiView(APIView):
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+            manual_parameters=[
+                Parameter("page", IN_QUERY, type="int", required=False),
+                Parameter("limit", IN_QUERY, type="int", required=False),
+            ]
+    )
     def get(self,request):
         try:
+            page = int(request.GET.get("page", 1))
+            limit = int(request.GET.get("limit", 10))
+            queryset=None
             queryset=OurTeam.objects.all()
-            return SuccessResponse(OurTeamSerializer(queryset,many=True).data,status=status.HTTP_200_OK)
+            paginator = queryset[((page-1) * limit):((page-1) *limit) + limit]
+            total_items=len(queryset)
+            return SuccessResponse(OurTeamSerializer(paginator,many=True).data,status=status.HTTP_200_OK,
+                                   total_items=total_items,
+                                   page=page,limit=limit)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
 
@@ -421,11 +444,24 @@ class TestimonyApiView(APIView):
             return SuccessResponse(TestimonySerializer(data).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-        
+
+    @swagger_auto_schema(
+            manual_parameters=[
+                Parameter("page", IN_QUERY, type="int", required=False),
+                Parameter("limit", IN_QUERY, type="int", required=False),
+            ]
+    )
     def get(self,request):
         try:
+            page = int(request.GET.get("page", 1))
+            limit = int(request.GET.get("limit", 10))
+            queryset=None
             queryset=Testimony.objects.all()
-            return SuccessResponse(TestimonySerializer(queryset,many=True).data,status=status.HTTP_200_OK)
+            paginator = queryset[((page-1) * limit):((page-1) *limit) + limit]
+            total_items=len(queryset)
+            return SuccessResponse(TestimonySerializer(paginator,many=True).data,status=status.HTTP_200_OK,
+                                   total_items=total_items,
+                                   page=page,limit=limit)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
             
@@ -706,12 +742,17 @@ class DashBoardApiView(APIView):
             agent=Agent.objects.count()
             view_property=PropertyListing.objects.count()
             device_counts = Device.objects.values('name').annotate(name_count=Count('name')).order_by('-name_count').all()
-            visitor = MostViewPage.objects.count()
+            visitor = MostViewPage.objects.aggregate(
+                count_aggr=Sum("count")
+            )
+            #blog
+            article=Blog.objects.order_by("-created_at")[:3]
             res={
-                "visitor":visitor,
+                "visitor":visitor["count_aggr"],
                 "blogPost":recent_post,
                 "property":view_property,
                 "agent":agent,
+                "article":BlogSerializer(article,many=True).data,
                 "top_browser":DeviceSerializer(device_counts,many=True).data if device_counts != None else None
             }
             return SuccessResponse(res,status=status.HTTP_200_OK)
@@ -739,3 +780,19 @@ class HomeApiView(APIView):
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
 
 
+class AnalyticsAPiView(APIView):
+    @swagger_auto_schema(
+            manual_parameters=[
+                Parameter("year", IN_QUERY, type="int", required=False,format="2023"),
+            ]
+    )
+    def get(self,request):
+        try:
+            today = datetime.utcnow().replace(tzinfo=timezone.utc)
+            # month=request.GET.get("month",None)
+            print(str(today.year))
+            year=request.GET.get("year",str(today.year))
+            queryset=get_analytics(year)
+            return SuccessResponse(queryset,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST) 

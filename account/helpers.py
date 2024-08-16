@@ -6,12 +6,13 @@ from django.conf import settings
 from django.core.mail import send_mail
 from rest_framework_simplejwt.tokens import RefreshToken
 
-def send_emails(email):
+def send_emails(email,instance=None):
         try:
             otp=get_random_string(5,allowed_chars=string.digits)
             subject = 'Confirm Your Email Address'
             message = render_to_string('accounts/email_confirmation.html', {
-            "otp":otp
+            "otp":otp,
+            "username":instance.username if instance else "user"
         })
             from_email = settings.EMAIL_HOST_USER
             to_email = email
