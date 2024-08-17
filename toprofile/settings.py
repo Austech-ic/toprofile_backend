@@ -14,6 +14,8 @@ from pathlib import Path
 from django.conf import settings
 from decouple import config
 from datetime import timedelta
+import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,7 +27,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-e62y#a!l18o*iqaip#+*-)0=+#__-jj+gitmu(r+t^rcm1fx4-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True if config("DEBUG") == "True" else False
+
 
 ALLOWED_HOSTS = ["127.0.0.1","www.backend.toprofile.com","backend.toprofile.com"]
 
@@ -99,7 +102,7 @@ else:
                 'ENGINE': 'django.db.backends.postgresql',
                 'NAME': 'jaswbwsw_toprofile',
                 'USER': 'jaswbwsw_toprofile_db',
-                'PASSWORD': 'J6~jyAdO?rM(',
+                'PASSWORD': '}^d[%X%fr9SE',
                 'HOST': 'localhost',
                 'PORT': 5432,
             }
