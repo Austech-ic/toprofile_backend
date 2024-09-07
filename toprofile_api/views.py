@@ -228,6 +228,13 @@ class AboutApiView(APIView):
 
 class SingleAboutAPiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
+
+    def get(self,request,pk):
+        try:
+            instance=AboutUs.objects.get(pk=pk)
+            return SuccessResponse(AboutUseSerializer(instance).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
     @swagger_auto_schema(
             request_body=AboutUseSerializer
@@ -271,6 +278,14 @@ class OurServicesApiView(APIView):
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
 class SingleOurServicesAPiView(APIView):
+
+    def get(self,request,pk):
+        try:
+            instance=OurServices.objects.get(pk=pk)
+            return SuccessResponse(OurServiceSerializer(instance).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+        
     @swagger_auto_schema(
             request_body=OurServiceSerializer
     )
@@ -317,6 +332,13 @@ class TermsOfServiceApiView(APIView):
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
 
 class SingleTermsofserviceAPiView(APIView):
+
+    def get(self,request,pk):
+        try:
+            instance=TermsOfService.objects.get(pk=pk)
+            return SuccessResponse(ReUsableSerializer(instance).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
     @swagger_auto_schema(
             request_body=ReUsableSerializer
@@ -363,6 +385,13 @@ class PrivatePolicyApiView(APIView):
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
 
 class SinglePrivacyAPiView(APIView):
+
+    def get(self,request,pk):
+        try:
+            instance=ReUsableSerializer(data=request.data)
+            return SuccessResponse(ReUsableSerializer(instance).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
     
     @swagger_auto_schema(
             request_body=ReUsableSerializer
@@ -424,6 +453,13 @@ class OurTeamApiView(APIView):
 
 class SingleOurTeamAPiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
+
+    def get(self,request,pk):
+        try:
+            instance=OurTeam.objects.get(pk=pk)
+            return SuccessResponse(OurTeamSerializer(instance).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
     
     @swagger_auto_schema(
             request_body=OurTeamSerializer
@@ -484,6 +520,14 @@ class TestimonyApiView(APIView):
 class SingleTestimonyApiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
      
+
+    def get(self,request,pk):
+        try:
+            instance=Testimony.objects.get(pk=pk)
+            return SuccessResponse(TestimonySerializer(instance).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+        
     @swagger_auto_schema(
             request_body=TestimonySerializer
     )
@@ -541,6 +585,14 @@ class AgentApiView(APIView):
 class SingleAgentAPiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
     
+
+    def get(self,request,pk):
+        try:
+            instance=Agent.objects.get(pk=pk)
+            return SuccessResponse(AgentReadSerializer(instance).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+        
     @swagger_auto_schema(
             request_body=AgentSerializer
     )
@@ -588,6 +640,13 @@ class AgentMemberApiView(APIView):
 class SingleAgentMemberAPiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
     
+
+    def get(self,request,pk):
+        try:
+            instance=AgentMember.objects.get(pk=pk)
+            return SuccessResponse(AgentMemberSerializer(instance).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
     @swagger_auto_schema(
             request_body=AgentMemberSerializer
     )
@@ -635,6 +694,13 @@ class HeroSectionApiView(APIView):
 class SingleHeroSectionAPiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
     
+    def get(self,request,pk):
+        try:
+            instance=HeroSection.objects.get(pk=pk)
+            return SuccessResponse(HeroSectionSerializer(instance).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+        
     @swagger_auto_schema(
             request_body=HeroSectionSerializer
     )
@@ -681,6 +747,14 @@ class FeatureSectionApiView(APIView):
 
 class SingleFeatureSectionAPiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
+
+
+    def get(self,request,pk):
+        try:
+            instance=FeatureSection.objects.get(pk=pk)
+            return SuccessResponse(FeatureSectionSerializer(instance).data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
     
     @swagger_auto_schema(
             request_body=FeatureSectionSerializer
