@@ -242,12 +242,12 @@ CORS_EXPOSE_HEADERS = [
     "auth_password",
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-    "https://backend.toprofile.com"
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8080",
+#     "https://backend.toprofile.com"
     
-]
-CORS_ALLOW_ALL_ORIGINS=False
+# ]
+CORS_ALLOW_ALL_ORIGINS=True
 
 # CORS_ALLOW_HEADERS=(
 #     *default_headers,
