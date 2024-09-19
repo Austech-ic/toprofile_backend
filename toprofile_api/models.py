@@ -89,6 +89,14 @@ class AboutUs(models.Model):
     about=models.TextField()
 
 class OurServices(models.Model):
+    def upload_to(instance, filename):
+        url = re.sub(
+            SPECIAL_CHARS_REGEX,
+            "_",
+            "images/service/{filename}".format(filename=filename),
+        )
+        return url
+    image=models.ImageField(upload_to=upload_to,max_length=500,null=True)
     title=models.CharField(max_length=500)
     content=models.TextField()
 

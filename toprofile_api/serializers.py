@@ -78,6 +78,7 @@ class AboutUseSerializer(serializers.ModelSerializer):
         fields="__all__"
 
 class OurServiceSerializer(serializers.ModelSerializer):
+    image=CustomHybridImageField(required=False)
     class Meta:
         model=OurServices
         fields="__all__"
