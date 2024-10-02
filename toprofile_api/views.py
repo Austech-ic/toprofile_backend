@@ -8,6 +8,7 @@ from .constant import MONTH
 from utils.responses import SuccessResponse,FailureResponse
 from django.db.models import Count
 from .serializers import (
+    PropertyCategorySerializer,
     AboutUseSerializer,
     OurServiceSerializer,
    FeatureSectionSerializer,
@@ -31,6 +32,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from .helpers import get_analytics
 from django.db.models import Sum
+from django.db import transaction
 class BlogApiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
    
@@ -122,7 +124,8 @@ class PropertyApiView(APIView):
                 Parameter("page", IN_QUERY, type="int", required=False),
                 Parameter("limit", IN_QUERY, type="int", required=False),
                 Parameter("minprice",IN_QUERY,type="int",required=False),
-                Parameter("maxprice",IN_QUERY,type="int",required=False)
+                Parameter("maxprice",IN_QUERY,type="int",required=False),
+                Parameter("category",IN_QUERY,type="str",required=False)
             ]
     )
     def get(self,request):
@@ -131,12 +134,16 @@ class PropertyApiView(APIView):
             limit = int(request.GET.get("limit", 10))
             minprice=int(request.GET.get("minprice",0))
             maxprice=int(request.GET.get("maxprice",0))
+            category=request.GET.get("category",None)
             queryset=PropertyListing.objects.order_by("-created_at").all()
             if minprice!=0:
                 queryset=queryset.filter(amount__gte=minprice)
 
             if maxprice !=0:
                 queryset=queryset.filter(amount__lte=maxprice)
+
+            if category:
+                queryset=queryset.filter(category__name__icontains=category)
 
             paginator = queryset[((page-1) * limit):((page-1) *limit) + limit]
             total_items=len(queryset)
@@ -151,18 +158,78 @@ class PropertyApiView(APIView):
     )
     def post(self,request):
         try:
-            serializer=PropertyInputSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            images=serializer.validated_data.pop("images",None)
-            data=serializer.save()
-            #save image 
-            if images:
-                for image in images:
-                    ImageAsset.objects.create(property=data,image=image)
-            return SuccessResponse(PropertyOutputSerializer(data).data,status=status.HTTP_200_OK)
+            with transaction.atomic():
+                serializer=PropertyInputSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                images=serializer.validated_data.pop("propertyImages",None)
+                data=serializer.save()
+                #save image 
+                if images:
+                    for image in images:
+                        ImageAsset.objects.create(property=data,image=image["image"])
+                return SuccessResponse(PropertyOutputSerializer(data).data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
-        
+
+class PropertyCategoryApiView(APIView):
+    @swagger_auto_schema(
+            request_body=PropertyCategorySerializer
+    )
+    def post(self,request):
+        try:
+            serializer=PropertyCategorySerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return SuccessResponse(serializer.data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST) 
+    @swagger_auto_schema(
+            manual_parameters=[
+                Parameter("page", IN_QUERY, type="int", required=False),
+                Parameter("limit", IN_QUERY, type="int", required=False),
+            ]
+    ) 
+    def get(self,request):
+        try:
+            page = int(request.GET.get("page", 1))
+            limit = int(request.GET.get("limit", 10))
+            queryset=PropertyCategory.objects.order_by("-created_at").all()
+            paginator = queryset[((page-1) * limit):((page-1) *limit) + limit]
+            total_items=len(queryset)
+            return SuccessResponse(PropertyCategorySerializer(paginator,many=True).data,status=status.HTTP_200_OK,                                   total_items=total_items,
+                                   page=page,limit=limit)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST) 
+
+class SinglePropertyCategoryApiView(APIView):
+    @swagger_auto_schema(
+            request_body=PropertyCategorySerializer
+    )
+    def put(self,request,id):
+        try:
+            instance=PropertyCategory.objects.get(id=id)
+            serializer=PropertyCategorySerializer(instance=instance,data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return SuccessResponse(serializer.data,status=status.HTTP_200_OK)
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST) 
+
+    def get(self,request,id):
+        try:
+            queryset=PropertyCategory.objects.get(id=id)
+            return SuccessResponse(PropertyCategorySerializer(queryset).data,status=status.HTTP_200_OK)                               
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST) 
+
+    def delete(self,request,id):
+        try:
+            queryset=PropertyCategory.objects.get(id=id)
+            queryset.delete()
+            return SuccessResponse("PROPERTY DELETED",status=status.HTTP_200_OK)                               
+        except Exception as e:
+            return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
+
 class SinglePropertyApiView(APIView):
     parser_classes=[JSONParser,MultiPartParser,FormParser]
 
@@ -178,19 +245,20 @@ class SinglePropertyApiView(APIView):
     )
     def put(self,request,slug):
         try:
-            instance=PropertyListing.objects.get(slug=slug)
-            serializer=PropertyInputSerializer(instance=instance,data=request.data)
-            serializer.is_valid(raise_exception=True)
-            images=serializer.validated_data.pop("images",None)
-            data=serializer.save()
-            #save image 
-            if images:
-                #delete the image associated to that instance
-                ImageAsset.objects.filter(property=instance).delete()
-                for image in images:
-                #save new image
-                    ImageAsset.objects.create(property=data,image=image)
-            return SuccessResponse(serializer.data,status=status.HTTP_200_OK)
+            with transaction.atomic():
+                instance=PropertyListing.objects.get(slug=slug)
+                serializer=PropertyInputSerializer(instance=instance,data=request.data)
+                serializer.is_valid(raise_exception=True)
+                images=serializer.validated_data.pop("propertyImages",None)
+                data=serializer.save()
+                #save image 
+                if images:
+                    #delete the image associated to that instance
+                    ImageAsset.objects.filter(property=instance).delete()
+                    for image in images:
+                    #save new image
+                        ImageAsset.objects.create(property=data,image=image["image"])
+                return SuccessResponse(serializer.data,status=status.HTTP_200_OK)
         except Exception as e:
             return FailureResponse(error_handler(e),status=status.HTTP_400_BAD_REQUEST)
         
@@ -291,8 +359,8 @@ class SingleOurServicesAPiView(APIView):
     )
     def put(self,request,pk):
         try:
-            OurServices.objects.get(pk=pk)
-            serializer=OurServiceSerializer(data=request.data)
+            instance=OurServices.objects.get(pk=pk)
+            serializer=OurServiceSerializer(instance=instance, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return SuccessResponse("updated successful",status=status.HTTP_200_OK)

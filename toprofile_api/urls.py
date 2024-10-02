@@ -30,7 +30,9 @@ SingleTermsofserviceAPiView,
     AdminAppearanceApiView,
     HomeApiView,
     DashBoardApiView,
-    AnalyticsAPiView
+    AnalyticsAPiView,
+    PropertyCategoryApiView,
+    SinglePropertyCategoryApiView
 )
 urlpatterns = [
     path("vistor/analytics/",AnalyticsAPiView.as_view()),
@@ -42,6 +44,8 @@ urlpatterns = [
     path("blog/<str:slug>/",SingleBlogApiView.as_view()),
     path("property/",PropertyApiView.as_view()),
     path("property/<str:slug>/",SinglePropertyApiView.as_view()),
+    path("property/listing/category/",PropertyCategoryApiView.as_view()),
+    path("property/listing/category/<int:id>/",SinglePropertyCategoryApiView.as_view()),
     path("about/us/",AboutApiView.as_view()),
     path("about/us/<int:pk>/",SingleAboutAPiView.as_view()),
     path("our_service/",OurServicesApiView.as_view()),

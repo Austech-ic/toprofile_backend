@@ -10,6 +10,10 @@ class CustomHybridImageField(HybridImageField):
             'description': 'Content of the base64 encoded images',
             'read_only': False  # <-- FIX
         }
+class PropertyCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model=PropertyCategory
+        fields="__all__"
 
 class BlogSerializer(serializers.ModelSerializer):
     comment=serializers.SerializerMethodField()
@@ -58,6 +62,7 @@ class PropertyOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model=PropertyListing
         fields="__all__"
+        depth=1
         
 
 class HeroSectionSerializer(serializers.ModelSerializer):
