@@ -50,12 +50,13 @@ class ImageAssetSerializer(serializers.ModelSerializer):
         }
 
 class PropertyInputSerializer(serializers.ModelSerializer):
-    propertyImages=ImageAssetSerializer(many=True)
+    propertyImages=ImageAssetSerializer(many=True,required=False)
     class Meta:
         model=PropertyListing
         exclude=[
             "slug"
         ]
+        
         
 class PropertyOutputSerializer(serializers.ModelSerializer):
     propertyImages=ImageAssetSerializer(many=True)
