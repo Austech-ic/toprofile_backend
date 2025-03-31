@@ -15,6 +15,7 @@ from django.conf import settings
 from decouple import config
 from datetime import timedelta
 import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,7 +31,7 @@ SECRET_KEY = config("NEW_SECRET")
 DEBUG = True if config("DEBUG") == "True" else False
 
 
-ALLOWED_HOSTS = ["127.0.0.1","www.backend.toprofile.com","backend.toprofile.com"]
+ALLOWED_HOSTS = ["127.0.0.1","toprofile-backend.onrender.com"]
 
 
 # Application definition
@@ -98,14 +99,7 @@ if DEBUG:
     }
 else:
     DATABASES = {
-                "default":{
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': 'jaswbwsw_toprofile',
-                'USER': 'jaswbwsw_toprofile_db',
-                'PASSWORD': '}^d[%X%fr9SE',
-                'HOST': 'localhost',
-                'PORT': 5432,
-            }
+            'default': dj_database_url.config(default=config('DATABASE_URL'),conn_max_age=600)
     }
 
 
