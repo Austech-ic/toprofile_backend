@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-e62y#a!l18o*iqaip#+*-)0=+#__-jj+gitmu(r+t^rcm1fx4-'
+SECRET_KEY = config("NEW_SECRET")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if config("DEBUG") == "True" else False
@@ -229,14 +229,14 @@ EMAIL_HOST_PASSWORD =config('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-if not DEBUG:
-    MEDIA_ROOT="/home/jaswbwsw/media.jaswillproperties.cloud/"
-    MEDIA_URL="https://media.jaswillproperties.cloud/"
-    STATIC_ROOT = '/home/jaswbwsw/public_html/toprofile_static'
-else:
-    MEDIA_URL="/media/"
-    STATIC_ROOT = BASE_DIR / "staticfiles"
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# if not DEBUG:
+#     MEDIA_ROOT="/home/jaswbwsw/media.jaswillproperties.cloud/"
+#     MEDIA_URL="https://media.jaswillproperties.cloud/"
+#     STATIC_ROOT = '/home/jaswbwsw/public_html/toprofile_static'
+# else:
+MEDIA_URL="/media/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 CORS_EXPOSE_HEADERS = [
     "auth_password",

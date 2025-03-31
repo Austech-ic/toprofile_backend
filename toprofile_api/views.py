@@ -948,7 +948,6 @@ class AnalyticsAPiView(APIView):
         try:
             today = datetime.utcnow().replace(tzinfo=timezone.utc)
             # month=request.GET.get("month",None)
-            print(str(today.year))
             year=request.GET.get("year",str(today.year))
             queryset=get_analytics(year)
             return SuccessResponse(queryset,status=status.HTTP_200_OK)
